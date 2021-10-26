@@ -1,7 +1,6 @@
 package ustc.yyd.bigbrother.machine.util;
 
 import ustc.yyd.bigbrother.data.Color;
-
 import java.util.Random;
 
 public class util {
