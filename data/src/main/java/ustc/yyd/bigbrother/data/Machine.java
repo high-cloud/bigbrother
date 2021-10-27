@@ -34,6 +34,9 @@ public class Machine extends Data{
     private Color color;
     private boolean autoChange; // if true, change color every few seconds
 
+    public Machine() {
+    }
+
     public Color getColor() {
         return color;
     }

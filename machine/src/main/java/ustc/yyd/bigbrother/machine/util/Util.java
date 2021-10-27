@@ -1,9 +1,14 @@
 package ustc.yyd.bigbrother.machine.util;
 
+import com.alibaba.fastjson.JSONObject;
 import ustc.yyd.bigbrother.data.Color;
+import ustc.yyd.bigbrother.data.Message;
+import ustc.yyd.bigbrother.data.MessageType;
+
+import java.util.HashMap;
 import java.util.Random;
 
-public class util {
+public class Util {
 
     public static Color randomColorRGB()
     {
@@ -43,5 +48,12 @@ public class util {
         }
 
         return sb.toString();
+    }
+
+    public static String creatMessageString(MessageType type, HashMap<String,String> content){
+        Message message = new Message();
+        message.setContent(content);
+        message.setType(type);
+        return JSONObject.toJSONString(message);
     }
 }

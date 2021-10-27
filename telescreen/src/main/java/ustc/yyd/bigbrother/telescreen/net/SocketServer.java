@@ -5,8 +5,11 @@ import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
+import ustc.yyd.bigbrother.data.Machine;
 
 import java.net.InetSocketAddress;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -19,9 +22,11 @@ public class SocketServer {
     private static EventLoopGroup workerGroup;
     private static ServerBootstrap server;
     static Map<String, Channel> nameToChannel;//用于保存客户端名字和Channel的Map
+    static List<Machine> machineList;//用于保存已经登记的machine，将来会用redis来代替
 
     static{
         nameToChannel = new ConcurrentHashMap<>();
+        machineList = new ArrayList<>();//实际上应该用线程安全的类
         bossGroup = new NioEventLoopGroup();
         workerGroup = new NioEventLoopGroup();
         server = new ServerBootstrap();

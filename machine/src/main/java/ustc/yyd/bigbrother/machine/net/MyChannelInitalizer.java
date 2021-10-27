@@ -16,7 +16,7 @@ public class MyChannelInitalizer extends ChannelInitializer<SocketChannel> {
         //按照\r\n进行解码
         ch.pipeline().addLast(new DelimiterBasedFrameDecoder(Integer.MAX_VALUE, Delimiters.lineDelimiter()));
         ch.pipeline().addLast(new StringDecoder());
-        //ch.pipeline().addLast(new MachineHandler());
+        ch.pipeline().addLast(new MachineHandler());
         ch.pipeline().addLast(new StringEncoder());
     }
 }

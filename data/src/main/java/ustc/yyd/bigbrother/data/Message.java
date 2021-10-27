@@ -24,6 +24,17 @@
 package ustc.yyd.bigbrother.data;
 
 import java.util.HashMap;
+/*
+    Message key list:
+    client_register_telescreen:
+        machineObject:客户端对象（被JSON处理过的字符串）
+
+    telescreen_confirm_client:
+        result:注册是否成功
+            ①success：注册成功
+            ②fail：注册失败
+
+*/
 
 public class Message {
     private MessageType type;
