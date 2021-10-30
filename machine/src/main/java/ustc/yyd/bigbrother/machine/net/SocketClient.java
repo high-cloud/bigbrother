@@ -20,25 +20,25 @@ import java.util.HashMap;
     Netty客户端启动类
  */
 public class SocketClient {
-    private EventLoopGroup group =null;
-    private Bootstrap client =null;
-    public ChannelFuture future=null;
+    EventLoopGroup group =null;
+    private ChannelFuture future=null;
 
     private int port;//和服务器的哪个端口进行连接
-    private String ip;//和服务器的哪个端口进行连接
+    private String ip;//服务器ip
 
 
     public SocketClient(int port, String ip){
         this.ip = ip;
         this.port = port;
         group = new NioEventLoopGroup();
-        client = new Bootstrap();
-        client.group(group);
-        client.channel(NioSocketChannel.class);
-        client.option(ChannelOption.SO_KEEPALIVE,true);
-        client.handler(new MyChannelInitalizer());
+
+        Bootstrap bootstrap = new Bootstrap();
+        bootstrap.group(group);
+        bootstrap.channel(NioSocketChannel.class);
+        bootstrap.option(ChannelOption.SO_KEEPALIVE,true);
+        bootstrap.handler(new MyChannelInitalizer());
         try {
-            future = client.connect(ip, port).sync();
+            future = bootstrap.connect(ip, port).sync();
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
@@ -57,7 +57,7 @@ public class SocketClient {
 //        }
 //    }
 
-    public void init(Machine machine){
+    public void init(Machine machine){//向服务器发送登记信息
         HashMap<String,String> content = new HashMap<>();
         content.put("machineObject",JSONObject.toJSONString(machine));
         String messageString = Util.creatMessageString(MessageType.client_register_telescreen,

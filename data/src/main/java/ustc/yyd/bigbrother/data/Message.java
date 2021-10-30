@@ -26,13 +26,20 @@ package ustc.yyd.bigbrother.data;
 import java.util.HashMap;
 /*
     Message key list:
-    client_register_telescreen:
+    client_register_telescreen:客户端向服务器注册
         machineObject:客户端对象（被JSON处理过的字符串）
 
-    telescreen_confirm_client:
+    telescreen_confirm_client:服务器向客户端确认注册
         result:注册是否成功
             ①success：注册成功
             ②fail：注册失败
+
+    client_heartBeat_telescreen：客户端向服务器发送心跳
+        暂时不放数据
+
+    telescreen_changeClient_client:
+        type:更改的类型
+            delete：关闭这个服务器
 
 */
 

@@ -21,12 +21,15 @@ public class SocketServer {
     private static EventLoopGroup bossGroup;
     private static EventLoopGroup workerGroup;
     private static ServerBootstrap server;
-    static Map<String, Channel> nameToChannel;//用于保存客户端名字和Channel的Map
+    static Map<String, Channel> nameToChannel;//key是客户端名字，value是对应的channel
+    static Map<Channel, String> channelToName;//key是channel，value是对应的客户端名字
     static List<Machine> machineList;//用于保存已经登记的machine，将来会用redis来代替
 
     static{
         nameToChannel = new ConcurrentHashMap<>();
+        channelToName = new ConcurrentHashMap<>();
         machineList = new ArrayList<>();//实际上应该用线程安全的类
+
         bossGroup = new NioEventLoopGroup();
         workerGroup = new NioEventLoopGroup();
         server = new ServerBootstrap();
