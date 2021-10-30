@@ -20,7 +20,7 @@ import java.util.HashMap;
     Netty客户端启动类
  */
 public class SocketClient {
-    EventLoopGroup group =null;
+    public EventLoopGroup group =null;
     private ChannelFuture future=null;
 
     private int port;//和服务器的哪个端口进行连接
@@ -61,6 +61,29 @@ public class SocketClient {
         HashMap<String,String> content = new HashMap<>();
         content.put("machineObject",JSONObject.toJSONString(machine));
         String messageString = Util.creatMessageString(MessageType.client_register_telescreen,
+                content);
+        future.channel().writeAndFlush(messageString);
+        future.channel().writeAndFlush("\r\n");//根据\r\n进行换行
+    }
+
+    public void stop(Machine machine){//向服务器告知客户端主动关闭
+        HashMap<String,String> content = new HashMap<>();
+        content.put("type","stop");
+        content.put("machineObject",JSONObject.toJSONString(machine));
+        String messageString = Util.creatMessageString(MessageType.client_report_telescreen,
+                content);
+        future.channel().writeAndFlush(messageString);
+        future.channel().writeAndFlush("\r\n");//根据\r\n进行换行
+        future.channel().close();
+
+        group.shutdownGracefully();
+    }
+
+    public void change(Machine machine){//客户端信息变化，通知服务器
+        HashMap<String,String> content = new HashMap<>();
+        content.put("type","update");
+        content.put("machineObject",JSONObject.toJSONString(machine));
+        String messageString = Util.creatMessageString(MessageType.client_report_telescreen,
                 content);
         future.channel().writeAndFlush(messageString);
         future.channel().writeAndFlush("\r\n");//根据\r\n进行换行

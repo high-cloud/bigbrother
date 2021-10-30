@@ -5,6 +5,7 @@ import com.alibaba.fastjson.JSONObject;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.handler.timeout.IdleStateEvent;
+import ustc.yyd.bigbrother.data.Color;
 import ustc.yyd.bigbrother.data.Message;
 import ustc.yyd.bigbrother.data.MessageType;
 import ustc.yyd.bigbrother.machine.MachineApplication;
@@ -52,10 +53,28 @@ public class MachineHandler extends ChannelInboundHandlerAdapter {
                             MachineApplication.run = false;
                             MachineApplication.client.group.shutdownGracefully();
                             System.out.println("请输入任意指令停止客户端");
+                            break;
                         }
-                    }
-                }
-            }
+                        case "setColor":{//收到修改颜色的指令
+                            String colorString = message.getContent().get("colorObject");
+                            Color color = JSON.parseObject(colorString, Color.class);
+                            MachineApplication.machine.setColor(color);
+                            break;
+                        }
+                        case "setAutoChange":{//收到修改自动变色的指令
+                            String ifAutoChange = message.getContent().get("autoChange");
+                            if("true".equals(ifAutoChange)){
+                                MachineApplication.machine.setAutoChange(true);
+                            }
+                            else{
+                                MachineApplication.machine.setAutoChange(false);
+                            }
+                            break;
+                        }
+                    }//switch (changeType)
+                    break;
+                }//case telescreen_changeClient_client
+            }//switch (message.getType())
         }
         else {
             System.out.println("not instanceof");

@@ -27,19 +27,22 @@ import java.util.HashMap;
 /*
     Message key list:
     client_register_telescreen:客户端向服务器注册
-        machineObject:客户端对象（被JSON处理过的字符串）
+        machineObject:客户端对象的JSON字符串
 
     telescreen_confirm_client:服务器向客户端确认注册
-        result:注册是否成功
-            ①success：注册成功
-            ②fail：注册失败
+        result:①success（注册成功） ②fail（注册失败）
 
     client_heartBeat_telescreen：客户端向服务器发送心跳
         暂时不放数据
 
     telescreen_changeClient_client:
-        type:更改的类型
-            delete：关闭这个服务器
+        type: ①delete（关闭这个服务器） ②setColor（修改颜色） ③setAutoChange（修改是否自动变色）
+        autoChange：①true ②false（只有type是setAutoChange时才有）
+        colorObject：Color对象的JSON字符串（只有type是setColor时才有）
+
+    client_report_telescreen：
+        type:①stop（客户端关闭） ②update（客户端更新）
+        machineObject:客户端对象
 
 */
 

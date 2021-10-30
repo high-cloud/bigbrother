@@ -19,17 +19,19 @@ import static io.netty.handler.timeout.IdleState.READER_IDLE;
 public class TelescreenHandler extends ChannelInboundHandlerAdapter {
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception{
-        System.out.println("收到客户端数据");
         if(msg instanceof String){
             String s = (String)msg;
             Message message = JSON.parseObject(s.toString(), Message.class);
-            System.out.println("数据内容："+JSONObject.toJSONString(message));
+            if(message.getType()!=MessageType.client_heartBeat_telescreen){//心跳包不显示
+                System.out.println("数据内容："+JSONObject.toJSONString(message));
+            }
+
             switch (message.getType()){
-                case client_register_telescreen:{
+                case client_register_telescreen:{//服务器处理客户端登记请求
                     HashMap<String,String> content = message.getContent();
                     String machineObject = content.get("machineObject");
                     Machine machine = JSON.parseObject(machineObject, Machine.class);
-                    System.out.println("machineName:"+machine.getName());
+                    //System.out.println("machineName:"+machine.getName());
                     if(SocketServer.nameToChannel.containsKey(machine.getName())){//报告名字重复，将重新生成名字
                         //向客户端回复登记失败
                         HashMap<String,String> responseContent = new HashMap<>();
@@ -43,9 +45,10 @@ public class TelescreenHandler extends ChannelInboundHandlerAdapter {
                         System.out.println("成功登记"+machine.getName()+"!");
                         SocketServer.nameToChannel.put(machine.getName(),ctx.channel());//将客户端名字和对应channel记录进Map
                         SocketServer.machineList.add(machine);//将客户端加入数据库
+                        // todo: 未来更换成存入数据库中
+
                         //目的是当心跳断开时根据channel得知哪个服务器断线了
                         SocketServer.channelToName.put(ctx.channel(),machine.getName());//将channel和对应的客户端名字记录进Map
-
 
                         //向客户端回复登记成功
                         HashMap<String,String> responseContent = new HashMap<>();
@@ -58,9 +61,33 @@ public class TelescreenHandler extends ChannelInboundHandlerAdapter {
                     }
 
                 }
-                case client_heartBeat_telescreen:{
-                    String clientName = SocketServer.channelToName.get(ctx.channel());
-                    System.out.println("收到"+clientName+"的心跳包");
+                case client_report_telescreen:{//服务器收到客户端改变状态请求
+                    HashMap<String,String> content = message.getContent();
+                    String status = content.get("type");
+                    String machineObject = content.get("machineObject");
+                    Machine machine = JSON.parseObject(machineObject, Machine.class);
+
+                    if(status.equals("stop")){//客户端主动关闭了，要在数据库中登记
+                        String clientName = machine.getName();
+                        //把这个断线的客户端从记录中删除
+                        SocketServer.nameToChannel.remove(clientName);
+                        SocketServer.channelToName.remove(ctx.channel());
+                        // todo: 修改数据库，未来可以用主键来获取machine，现在用list不方便
+                        System.out.println(clientName+"已经关闭");
+                        ctx.channel().close();
+
+                    }
+                    else{//status.equals("update")  客户端更新了自己的状态
+                        System.out.println(machine.getName()+"更新了状态");
+                        //SocketServer.machineList.add(machine);修改数据库中的内容
+                        // todo: 修改数据库，未来可以用主键来获取machine，现在用list不方便
+
+                    }
+                }
+
+                case client_heartBeat_telescreen:{//服务器收到心跳
+                    //String clientName = SocketServer.channelToName.get(ctx.channel());
+                    //System.out.println("收到"+clientName+"的心跳包");
                     break;
                 }
             }

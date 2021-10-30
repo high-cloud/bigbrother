@@ -33,13 +33,41 @@ public class MachineApplication {
                 break;
             }
             switch (str){
-                case "init":
-                {
+                case "init": {//客户端初始化，向服务器登记
                     client.init(machine);
                     break;
                 }
+                case "stop":{//客户端主动停掉
+                    client.stop(machine);
+                    run = false;
+                    break;
+                }
+                case "status":{//查看当前客户端状态
+                    System.out.println(machine);
+                    break;
+                }
+                case "setRandom":{//把客户端设置成自动换色
+                    machine.setAutoChange(true);
+                    client.change(machine);
+                    break;
+                }
+                case "setNotRandom":{//把客户端设置成不自动换色
+                    machine.setAutoChange(false);
+                    client.change(machine);
+                    break;
+                }
+                case "setNewColor":{//更换客户端颜色
+                    machine.setColor(Util.randomColorRGB());
+                    client.change(machine);
+                    break;
+                }
+
+                default:{
+                    System.out.println("无效指令");
+                    break;
+                }
             }
-            Thread.sleep(5000);
+            Thread.sleep(1000);
         }
         System.out.println("客户端已停止");
 
