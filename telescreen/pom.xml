@@ -12,8 +12,8 @@
     <artifactId>telescreen</artifactId>
 
     <properties>
-        <maven.compiler.source>16</maven.compiler.source>
-        <maven.compiler.target>16</maven.compiler.target>
+        <maven.compiler.source>8</maven.compiler.source>
+        <maven.compiler.target>8</maven.compiler.target>
     </properties>
 
     <dependencies>
@@ -22,11 +22,13 @@
             <artifactId>netty-all</artifactId>
             <version>4.1.69.Final</version>
         </dependency>
+
         <dependency>
             <groupId>ustc.yyd</groupId>
             <artifactId>data</artifactId>
             <version>0.0.1-SNAPSHOT</version>
         </dependency>
+
     </dependencies>
 
 

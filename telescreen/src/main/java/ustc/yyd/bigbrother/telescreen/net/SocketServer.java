@@ -23,7 +23,7 @@ public class SocketServer {
     private static ServerBootstrap server;
     static Map<String, Channel> nameToChannel;//key是客户端名字，value是对应的channel
     static Map<Channel, String> channelToName;//key是channel，value是对应的客户端名字
-    static List<Machine> machineList;//用于保存已经登记的machine，将来会用redis来代替
+    static List<Machine> machineList;//充当数据库，用于保存已经登记的machine，将来会用redis来代替
 
     static{
         nameToChannel = new ConcurrentHashMap<>();

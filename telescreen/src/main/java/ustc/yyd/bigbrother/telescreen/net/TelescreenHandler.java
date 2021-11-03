@@ -1,6 +1,7 @@
 package ustc.yyd.bigbrother.telescreen.net;
 
 import com.alibaba.fastjson.JSONObject;
+import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
@@ -46,9 +47,18 @@ public class TelescreenHandler extends ChannelInboundHandlerAdapter {
                         SocketServer.nameToChannel.put(machine.getName(),ctx.channel());//将客户端名字和对应channel记录进Map
                         SocketServer.machineList.add(machine);//将客户端加入数据库
                         // todo: 未来更换成存入数据库中
-
                         //目的是当心跳断开时根据channel得知哪个服务器断线了
                         SocketServer.channelToName.put(ctx.channel(),machine.getName());//将channel和对应的客户端名字记录进Map
+
+                        //向web服务器通知有新的客户端接入
+                        if(!SocketServer.nameToChannel.containsKey("@@")){//web服务器如果没启动，不用通知
+                            Channel webChannel= SocketServer.nameToChannel.get("@@");
+                            HashMap<String,String> toWebContent = new HashMap<>();
+                            toWebContent.put("name",machine.getName());
+                            webChannel.writeAndFlush(Util.creatMessageString(MessageType.telescreen_newClient_webserver,
+                                    toWebContent));
+                            ctx.channel().writeAndFlush("\r\n");//根据\r\n进行换行
+                        }
 
                         //向客户端回复登记成功
                         HashMap<String,String> responseContent = new HashMap<>();
@@ -59,15 +69,15 @@ public class TelescreenHandler extends ChannelInboundHandlerAdapter {
 
                         break;
                     }
-
                 }
+
                 case client_report_telescreen:{//服务器收到客户端改变状态请求
                     HashMap<String,String> content = message.getContent();
-                    String status = content.get("type");
+                    String type = content.get("type");
                     String machineObject = content.get("machineObject");
                     Machine machine = JSON.parseObject(machineObject, Machine.class);
 
-                    if(status.equals("stop")){//客户端主动关闭了，要在数据库中登记
+                    if(type.equals("stop")){//客户端主动关闭了，要在数据库中登记
                         String clientName = machine.getName();
                         //把这个断线的客户端从记录中删除
                         SocketServer.nameToChannel.remove(clientName);
@@ -83,11 +93,61 @@ public class TelescreenHandler extends ChannelInboundHandlerAdapter {
                         // todo: 修改数据库，未来可以用主键来获取machine，现在用list不方便
 
                     }
+
+                    //向web服务器通知有客户端状态更改
+                    if(!SocketServer.nameToChannel.containsKey("@@")){//web服务器如果没启动，不用通知
+                        Channel webChannel= SocketServer.nameToChannel.get("@@");
+                        HashMap<String,String> toWebContent = new HashMap<>();
+                        toWebContent.put("name",machine.getName());
+                        toWebContent.put("type",type);
+                        webChannel.writeAndFlush(Util.creatMessageString(MessageType.telescreen_clientChange_webserver,
+                                toWebContent));
+                        ctx.channel().writeAndFlush("\r\n");//根据\r\n进行换行
+                    }
                 }
 
-                case client_heartBeat_telescreen:{//服务器收到心跳
+                case client_heartBeat_telescreen:{//服务器收到心跳，暂时先不处理
                     //String clientName = SocketServer.channelToName.get(ctx.channel());
                     //System.out.println("收到"+clientName+"的心跳包");
+                    break;
+                }
+
+                case webserver_register_telescreen:{//服务器处理webServer登记请求
+                    SocketServer.nameToChannel.put("@@",ctx.channel());//将客户端名字和对应channel记录进Map
+                    break;
+                }
+                case webserver_changeClient_telescreen:{//web服务器控制客户端状态改变
+                    HashMap<String,String> content = message.getContent();
+                    String type = content.get("type");
+                    String machineName = content.get("name");
+                    if("stop".equals(type)){//web服务器命令停止某个客户端
+                        //向客户端报告，让它主动关闭
+                        Channel clientChannel = SocketServer.nameToChannel.get(machineName);//通过map找到对应的channel
+                        HashMap<String,String> responseContent = new HashMap<>();
+                        responseContent.put("type","stop");
+                        clientChannel.writeAndFlush(Util.creatMessageString(MessageType.telescreen_changeClient_client,
+                                responseContent));
+                        ChannelFuture future = ctx.channel().writeAndFlush("\r\n");//根据\r\n进行换行
+                        future.channel().close();
+
+                        SocketServer.channelToName.remove(ctx.channel());
+                        SocketServer.nameToChannel.remove(machineName);
+                        // todo 修改数据库
+                    }
+                    else{//type==update，要更新某个客户端状态
+                        String machineObject = content.get("machineObject");
+                        Machine machine = JSON.parseObject(machineObject, Machine.class);
+                        // todo 修改数据库，把新machine放入数据库进行更新
+                        //向客户端报告，让它主动关闭
+                        Channel clientChannel = SocketServer.nameToChannel.get(machineName);//通过map找到对应的channel
+                        HashMap<String,String> responseContent = new HashMap<>();
+                        responseContent.put("type","update");
+                        responseContent.put("machineObject",machineObject);
+                        clientChannel.writeAndFlush(Util.creatMessageString(MessageType.telescreen_changeClient_client,
+                                responseContent));
+                        ChannelFuture future = ctx.channel().writeAndFlush("\r\n");//根据\r\n进行换行
+                        future.channel().close();
+                    }
                     break;
                 }
             }
@@ -112,9 +172,9 @@ public class TelescreenHandler extends ChannelInboundHandlerAdapter {
                 // todo: 修改数据库，未来可以用主键来获取machine，现在用list不方便
                 System.out.println(clientName+"超时未发送心跳包，断掉连接");
 
-                //如果链接还管用，就向客户端报告，让它主动关闭服务器
+                //如果链接还管用，就向客户端报告，让它主动关闭
                 HashMap<String,String> responseContent = new HashMap<>();
-                responseContent.put("type","delete");
+                responseContent.put("type","stop");
                 ctx.channel().writeAndFlush(Util.creatMessageString(MessageType.telescreen_changeClient_client,
                         responseContent));
                 ChannelFuture future = ctx.channel().writeAndFlush("\r\n");//根据\r\n进行换行

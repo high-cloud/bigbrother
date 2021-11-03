@@ -20,7 +20,7 @@ public class MyChannelInitializer extends ChannelInitializer<SocketChannel> {
     protected void initChannel(SocketChannel ch) throws Exception {
         ch.pipeline().addLast(new DelimiterBasedFrameDecoder(Integer.MAX_VALUE, Delimiters.lineDelimiter()));
         ch.pipeline().addLast(new StringDecoder(CharsetUtil.UTF_8));
-        ch.pipeline().addLast(new IdleStateHandler(5, 0, 0, TimeUnit.SECONDS));//心跳Handler放在这
+        //ch.pipeline().addLast(new IdleStateHandler(5, 0, 0, TimeUnit.SECONDS));//心跳Handler放在这
         ch.pipeline().addLast(new TelescreenHandler());  //业务逻辑Handler放在这
         ch.pipeline().addLast(new StringEncoder(CharsetUtil.UTF_8));
     }

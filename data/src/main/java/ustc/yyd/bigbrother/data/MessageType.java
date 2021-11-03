@@ -7,8 +7,8 @@ public enum MessageType {
     telescreen_confirm_client,
     telescreen_newClient_webserver,
     telescreen_clientChange_webserver,
-    //telescreen_heartBeat_client,服务器不主动向客户端发心跳
     telescreen_changeClient_client,
-    webserver_changeClient_telescreen
-
+    webserver_changeClient_telescreen,
+    webserver_register_telescreen
+    //telescreen_heartBeat_client,服务器不主动向客户端发心跳
 }

@@ -6,6 +6,7 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.handler.timeout.IdleStateEvent;
 import ustc.yyd.bigbrother.data.Color;
+import ustc.yyd.bigbrother.data.Machine;
 import ustc.yyd.bigbrother.data.Message;
 import ustc.yyd.bigbrother.data.MessageType;
 import ustc.yyd.bigbrother.machine.MachineApplication;
@@ -47,28 +48,20 @@ public class MachineHandler extends ChannelInboundHandlerAdapter {
                 case telescreen_changeClient_client:{//服务端命令客户端改变状态
                     String changeType = message.getContent().get("type");
                     switch (changeType){
-                        case "delete":{//由于没有收到心跳，命令停止这个客户端
-                            System.out.println("由于客户端没有收到心跳，停止这个客户端");
+                        case "stop":{//服务器命令终止或未收到心跳，命令停止这个客户端
+                            System.out.println("服务器命令终止或未收到心跳，停止这个客户端");
                             ctx.channel().close();
                             MachineApplication.run = false;
                             MachineApplication.client.group.shutdownGracefully();
                             System.out.println("请输入任意指令停止客户端");
                             break;
                         }
-                        case "setColor":{//收到修改颜色的指令
-                            String colorString = message.getContent().get("colorObject");
-                            Color color = JSON.parseObject(colorString, Color.class);
-                            MachineApplication.machine.setColor(color);
-                            break;
-                        }
-                        case "setAutoChange":{//收到修改自动变色的指令
-                            String ifAutoChange = message.getContent().get("autoChange");
-                            if("true".equals(ifAutoChange)){
-                                MachineApplication.machine.setAutoChange(true);
-                            }
-                            else{
-                                MachineApplication.machine.setAutoChange(false);
-                            }
+                        case "update":{//收到修改客户端状态的指令
+                            String machineString = message.getContent().get("machineObject");
+                            Machine machine = JSON.parseObject(machineString, Machine.class);
+                            //修改本地machine的值，不直接改变指针指向
+                            MachineApplication.machine.setColor(machine.getColor());
+                            MachineApplication.machine.setAutoChange(machine.isAutoChange());
                             break;
                         }
                     }//switch (changeType)

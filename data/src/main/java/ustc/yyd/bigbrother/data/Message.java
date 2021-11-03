@@ -26,23 +26,37 @@ package ustc.yyd.bigbrother.data;
 import java.util.HashMap;
 /*
     Message key list:
-    client_register_telescreen:客户端向服务器注册
+    client_register_telescreen:客户端向socket服务器注册
         machineObject:客户端对象的JSON字符串
 
-    telescreen_confirm_client:服务器向客户端确认注册
+    telescreen_confirm_client:socket服务器向客户端确认注册
         result:①success（注册成功） ②fail（注册失败）
 
     client_heartBeat_telescreen：客户端向服务器发送心跳
         暂时不放数据
 
-    telescreen_changeClient_client:
-        type: ①delete（关闭这个服务器） ②setColor（修改颜色） ③setAutoChange（修改是否自动变色）
-        autoChange：①true ②false（只有type是setAutoChange时才有）
-        colorObject：Color对象的JSON字符串（只有type是setColor时才有）
+    telescreen_changeClient_client:socket服务器通知客户端更改状态
+        type: ①stop（关闭这个客户端） ②update（修改这个客户端的状态）
+        machineObject:客户端对象的JSON字符串（只有type是update才有）
 
-    client_report_telescreen：
+    client_report_telescreen：客户端向socket服务器通知状态改变
         type:①stop（客户端关闭） ②update（客户端更新）
-        machineObject:客户端对象
+        machineObject:客户端对象的JSON处字符串
+
+    webserver_register_telescreen:web服务器向socket服务器登记
+        name:"@@" (@@这个名字普通的客户端无法生成，所以这个名字可以专属于webServer)
+
+    telescreen_newClient_webserver:socket服务器告知web服务器有新客户端
+        name:新增machine的名字
+
+    telescreen_clientChange_webserver:socket服务器通知web服务器客户端状态改变
+        name:状态改变的machine的名字
+        type:①stop（客户端关闭） ②update（客户端更新） （状态改变的种类）
+
+    webserver_changeClient_telescreen：web服务器告知socket服务器更改客户端状态
+        name:客户端名字
+        type:①stop（停止这个客户端运行） ②update（改变这个客户端状态）
+        machineObject:客户端对象的JSON字符串（只有type是update才有）
 
 */
 
