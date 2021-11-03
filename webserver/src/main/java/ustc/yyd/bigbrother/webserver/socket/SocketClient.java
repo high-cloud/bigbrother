@@ -1,11 +1,17 @@
 package ustc.yyd.bigbrother.webserver.socket;
 
+import com.alibaba.fastjson.JSONObject;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelOption;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioSocketChannel;
+import ustc.yyd.bigbrother.data.Machine;
+import ustc.yyd.bigbrother.data.MessageType;
+import ustc.yyd.bigbrother.webserver.util.Util;
+
+import java.util.HashMap;
 
 public class SocketClient {
     private static ChannelFuture future=null;
@@ -32,8 +38,29 @@ public class SocketClient {
     }
 
     //用这种方式来实现向socket服务器写东西的具体逻辑
+
+    //向socket服务器发停止命令
     public static void stopOneClient(String clientName){
-        future.channel();
+        HashMap<String,String> content = new HashMap<>();
+        content.put("name",clientName);
+        content.put("type","stop");
+
+        future.channel().writeAndFlush(Util.creatMessageString(MessageType.webserver_changeClient_telescreen,
+                content));
+        future.channel().writeAndFlush("\r\n");
+
+    }
+
+    //向socket服务器发改变状态命令
+    public static void changeOneClient(String clientName, Machine machine){
+        HashMap<String,String> content = new HashMap<>();
+        content.put("name",clientName);
+        content.put("type","update");
+        content.put("machineObject", JSONObject.toJSONString(machine));
+
+        future.channel().writeAndFlush(Util.creatMessageString(MessageType.webserver_changeClient_telescreen,
+                content));
+        future.channel().writeAndFlush("\r\n");
     }
 
 }
