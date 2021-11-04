@@ -31,17 +31,12 @@ public class MachineHandler extends ChannelInboundHandlerAdapter {
                         System.out.println("已成功注册"+ MachineApplication.machine.getName());
                     }
                     else{//注册失败，重新生成名字，重新初始化
-                        System.out.println("由于有同名服务器，注册失败，重新生成服务器名后重试");
-                        MachineApplication.machine.setName(Util.randomName(3));
-                        System.out.println("新服务器名为"+MachineApplication.machine.getName());
-
-                        //重新向服务器发送登记请求
-                        HashMap<String,String> content = new HashMap<>();
-                        content.put("machineObject", JSONObject.toJSONString(MachineApplication.machine));
-                        String messageString = Util.creatMessageString(MessageType.client_register_telescreen,
-                                content);
-                        ctx.channel().writeAndFlush(messageString);
-                        ctx.channel().writeAndFlush("\r\n");//根据\r\n进行换行
+                        System.out.println("注册失败，请稍后再试");
+                        ctx.channel().close();
+                        MachineApplication.run = false;
+                        MachineApplication.client.group.shutdownGracefully();
+                        System.out.println("请输入任意指令停止客户端");
+                        break;
                     }
                     break;
                 }

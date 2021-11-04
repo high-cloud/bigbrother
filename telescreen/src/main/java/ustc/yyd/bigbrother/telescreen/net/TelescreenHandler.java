@@ -22,7 +22,7 @@ public class TelescreenHandler extends ChannelInboundHandlerAdapter {
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception{
         if(msg instanceof String){
             String s = (String)msg;
-            Message message = JSON.parseObject(s.toString(), Message.class);
+            Message message = JSON.parseObject(s, Message.class);
             if(message.getType()!=MessageType.client_heartBeat_telescreen){//心跳包不显示
                 System.out.println("数据内容："+JSONObject.toJSONString(message));
             }
@@ -32,8 +32,8 @@ public class TelescreenHandler extends ChannelInboundHandlerAdapter {
                     HashMap<String,String> content = message.getContent();
                     String machineObject = content.get("machineObject");
                     Machine machine = JSON.parseObject(machineObject, Machine.class);
-                    //System.out.println("machineName:"+machine.getName());
-                    if(SocketServer.nameToChannel.containsKey(machine.getName())){//报告名字重复，将重新生成名字
+                    if(SocketServer.nameToChannel.containsKey(machine.getName())
+                            || !SocketServer.nameToChannel.containsKey("@@")){//报告名字重复或者web服务器没启动，登记失败
                         //向客户端回复登记失败
                         HashMap<String,String> responseContent = new HashMap<>();
                         responseContent.put("result","fail");
@@ -45,19 +45,17 @@ public class TelescreenHandler extends ChannelInboundHandlerAdapter {
                     else {//成功登记
                         System.out.println("成功登记"+machine.getName()+"!");
                         SocketServer.nameToChannel.put(machine.getName(),ctx.channel());//将客户端名字和对应channel记录进Map
-                        //SocketServer.machineList.add(machine);//将客户端加入数据库
-                        SocketServer.machineMap.put(machine.getName(),machine);//将客户端加入数据库
+                        //SocketServer.machineMap.put(machine.getName(),machine);//将客户端加入数据库
                         SocketServer.channelToName.put(ctx.channel(),machine.getName());//将channel和对应的客户端名字记录进Map
 
                         //向web服务器通知有新的客户端接入
-                        if(SocketServer.nameToChannel.containsKey("@@")){//web服务器如果没启动，不用通知
-                            Channel webChannel= SocketServer.nameToChannel.get("@@");
-                            HashMap<String,String> toWebContent = new HashMap<>();
-                            toWebContent.put("name",machine.getName());
-                            webChannel.writeAndFlush(Util.creatMessageString(MessageType.telescreen_newClient_webserver,
-                                    toWebContent));
-                            ctx.channel().writeAndFlush("\r\n");//根据\r\n进行换行
-                        }
+                        Channel webChannel= SocketServer.nameToChannel.get("@@");
+                        HashMap<String,String> toWebContent = new HashMap<>();
+                        toWebContent.put("name",machine.getName());
+                        toWebContent.put("machineObject",machineObject);
+                        webChannel.writeAndFlush(Util.creatMessageString(MessageType.telescreen_newClient_webserver,
+                                toWebContent));
+                        webChannel.writeAndFlush("\r\n");//根据\r\n进行换行
 
                         //向客户端回复登记成功
                         HashMap<String,String> responseContent = new HashMap<>();
@@ -81,15 +79,14 @@ public class TelescreenHandler extends ChannelInboundHandlerAdapter {
                         //把这个断线的客户端从记录中删除
                         SocketServer.nameToChannel.remove(clientName);
                         SocketServer.channelToName.remove(ctx.channel());
-                        SocketServer.machineMap.remove(clientName);
+                        //SocketServer.machineMap.remove(clientName);
                         System.out.println(clientName+"已经关闭");
                         ctx.channel().close();
 
                     }
                     else{//status.equals("update")  客户端更新了自己的状态
                         System.out.println(machine.getName()+"更新了状态");
-                        //SocketServer.machineList.add(machine);修改数据库中的内容
-                        SocketServer.machineMap.put(machine.getName(),machine);
+                        //SocketServer.machineMap.put(machine.getName(),machine);
 
                     }
 
@@ -99,9 +96,16 @@ public class TelescreenHandler extends ChannelInboundHandlerAdapter {
                         HashMap<String,String> toWebContent = new HashMap<>();
                         toWebContent.put("name",machine.getName());
                         toWebContent.put("type",type);
+                        if("stop".equals(type)){
+                            toWebContent.put("machineObject",null);
+                        }
+                        else{
+                            toWebContent.put("machineObject",machineObject);
+                        }
+
                         webChannel.writeAndFlush(Util.creatMessageString(MessageType.telescreen_clientChange_webserver,
                                 toWebContent));
-                        ctx.channel().writeAndFlush("\r\n");//根据\r\n进行换行
+                        webChannel.writeAndFlush("\r\n");//根据\r\n进行换行
                     }
                 }
 
@@ -131,12 +135,12 @@ public class TelescreenHandler extends ChannelInboundHandlerAdapter {
 
                         SocketServer.channelToName.remove(ctx.channel());
                         SocketServer.nameToChannel.remove(machineName);
-                        SocketServer.machineMap.remove(machineName);
+                        //SocketServer.machineMap.remove(machineName);
                     }
                     else{//type==update，要更新某个客户端状态
                         String machineObject = content.get("machineObject");
                         Machine machine = JSON.parseObject(machineObject, Machine.class);
-                        SocketServer.machineMap.put(machineName,machine);
+                        //SocketServer.machineMap.put(machineName,machine);
 
                         //向客户端报告，让它主动关闭
                         Channel clientChannel = SocketServer.nameToChannel.get(machineName);//通过map找到对应的channel
@@ -172,8 +176,18 @@ public class TelescreenHandler extends ChannelInboundHandlerAdapter {
                 //把这个断线的客户端从记录中删除
                 SocketServer.nameToChannel.remove(clientName);
                 SocketServer.channelToName.remove(ctx.channel());
-                SocketServer.machineMap.remove(clientName);
+                //SocketServer.machineMap.remove(clientName);
                 System.out.println(clientName+"超时未发送心跳包，断掉连接");
+
+                //向web服务器通告有客户端掉线
+                Channel webChannel= SocketServer.nameToChannel.get("@@");
+                HashMap<String,String> toWebContent = new HashMap<>();
+                toWebContent.put("name",clientName);
+                toWebContent.put("type","stop");
+                toWebContent.put("machineObject",null);
+                webChannel.writeAndFlush(Util.creatMessageString(MessageType.telescreen_clientChange_webserver,
+                        toWebContent));
+                webChannel.writeAndFlush("\r\n");//根据\r\n进行换行
 
                 //如果链接还管用，就向客户端报告，让它主动关闭
                 HashMap<String,String> responseContent = new HashMap<>();

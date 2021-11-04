@@ -48,10 +48,12 @@ import java.util.HashMap;
 
     telescreen_newClient_webserver:socket服务器告知web服务器有新客户端
         name:新增machine的名字
+        machineObject:客户端对象的JSON字符串
 
     telescreen_clientChange_webserver:socket服务器通知web服务器客户端状态改变
         name:状态改变的machine的名字
         type:①stop（客户端关闭） ②update（客户端更新） （状态改变的种类）
+        machineObject:客户端对象的JSON字符串（如果是stop，则为null）
 
     webserver_changeClient_telescreen：web服务器告知socket服务器更改客户端状态
         name:客户端名字

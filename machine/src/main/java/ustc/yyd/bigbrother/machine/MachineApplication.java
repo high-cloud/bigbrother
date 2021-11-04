@@ -43,7 +43,7 @@ public class MachineApplication {
                     break;
                 }
                 case "status":{//查看当前客户端状态
-                    System.out.println(machine);
+                    System.out.print(machine);
                     break;
                 }
                 case "setRandom":{//把客户端设置成自动换色

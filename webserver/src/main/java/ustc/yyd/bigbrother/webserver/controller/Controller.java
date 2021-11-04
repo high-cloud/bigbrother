@@ -17,6 +17,7 @@ public class Controller {
     public String stopOneClient(String clientName){
         System.out.println("停止"+clientName);
         SocketClient.stopOneClient(clientName);
+        //todo 修改数据库
         return "success";
     }
 

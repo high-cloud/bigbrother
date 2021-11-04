@@ -11,9 +11,9 @@ import java.util.ArrayList;
 /*
 * 返回页面的controller
 * */
-@Controller
+//@Controller
 public class WebController {
-    @GetMapping("/index")
+    //@GetMapping("/index")
     public String index(ModelMap map) {
         ArrayList<Machine> machineList = new ArrayList<>(SocketServer.machineMap.values());
         map.put("machineList",machineList);
