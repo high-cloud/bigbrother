@@ -13,7 +13,7 @@ import java.util.ArrayList;
  * */
 @Controller
 public class WebController {
-    @GetMapping("/index")
+    @GetMapping("/")
     public String index(ModelMap map) {
         System.out.println(DataBase.machineMap.size());
         ArrayList<Machine> machineList = new ArrayList<>(DataBase.machineMap.values());
