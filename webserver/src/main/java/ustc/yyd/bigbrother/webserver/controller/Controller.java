@@ -13,12 +13,6 @@ import ustc.yyd.bigbrother.webserver.socket.SocketClient;
 * */
 @RestController
 public class Controller {
-    @GetMapping("/hello")
-    public String hello(@RequestParam(value = "name", defaultValue = "World") String name) {
-        //SocketClient.change(); 通过这种方式来向socket服务器下达指令
-        return String.format("Hello %s!", name);
-    }
-
     @RequestMapping("/stopOneClient")
     public String stopOneClient(String clientName){
         System.out.println("停止"+clientName);

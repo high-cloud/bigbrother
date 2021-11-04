@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<!--suppress ALL-->
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>客户端管理界面</title>
+</head>
+<body>
+    <table>
+        <tr>
+            <th>名字</th>
+            <th>自动变色</th>
+            <th>颜色</th>
+            <th>设置自动变色</th>
+            <th>设置颜色</th>
+        </tr>
+        <tr th:each="machine : ${machineList}">
+            <td th:text="${machine.name}"></td>
+            <td th:text="${machine.autoChange}"></td>
+            <td>
+                <div th:style="'width:50px; height:30px; background: rgb('
+                    +${machine.color.red}+','+${machine.color.green}+','+${machine.color.blue}+')'">
+                </div>
+            </td>
+            <td><button>更改自动变色</button></td>
+            <td><button>设置颜色</button></td>
+        </tr>
+    </table>
+
+</body>
+</html>

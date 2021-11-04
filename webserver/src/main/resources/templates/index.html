@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<!--suppress ALL-->
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>客户端管理界面</title>
+</head>
+<body>
+    <div th:text="${text}"></div>
+    <tr>
+        <th>名字</th>
+        <th>自动变色</th>
+    </tr>
+    <tr th:each="machine : ${machineList}">
+        <td th:text="${machine.name}"></td>
+        <td th:text="${machine.autoChange}"></td>
+    </tr>
+</body>
+</html>

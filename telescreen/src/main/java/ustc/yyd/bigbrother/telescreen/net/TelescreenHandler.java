@@ -45,13 +45,12 @@ public class TelescreenHandler extends ChannelInboundHandlerAdapter {
                     else {//成功登记
                         System.out.println("成功登记"+machine.getName()+"!");
                         SocketServer.nameToChannel.put(machine.getName(),ctx.channel());//将客户端名字和对应channel记录进Map
-                        SocketServer.machineList.add(machine);//将客户端加入数据库
-                        // todo: 未来更换成存入数据库中
-                        //目的是当心跳断开时根据channel得知哪个服务器断线了
+                        //SocketServer.machineList.add(machine);//将客户端加入数据库
+                        SocketServer.machineMap.put(machine.getName(),machine);//将客户端加入数据库
                         SocketServer.channelToName.put(ctx.channel(),machine.getName());//将channel和对应的客户端名字记录进Map
 
                         //向web服务器通知有新的客户端接入
-                        if(!SocketServer.nameToChannel.containsKey("@@")){//web服务器如果没启动，不用通知
+                        if(SocketServer.nameToChannel.containsKey("@@")){//web服务器如果没启动，不用通知
                             Channel webChannel= SocketServer.nameToChannel.get("@@");
                             HashMap<String,String> toWebContent = new HashMap<>();
                             toWebContent.put("name",machine.getName());
@@ -82,7 +81,7 @@ public class TelescreenHandler extends ChannelInboundHandlerAdapter {
                         //把这个断线的客户端从记录中删除
                         SocketServer.nameToChannel.remove(clientName);
                         SocketServer.channelToName.remove(ctx.channel());
-                        // todo: 修改数据库，未来可以用主键来获取machine，现在用list不方便
+                        SocketServer.machineMap.remove(clientName);
                         System.out.println(clientName+"已经关闭");
                         ctx.channel().close();
 
@@ -90,12 +89,12 @@ public class TelescreenHandler extends ChannelInboundHandlerAdapter {
                     else{//status.equals("update")  客户端更新了自己的状态
                         System.out.println(machine.getName()+"更新了状态");
                         //SocketServer.machineList.add(machine);修改数据库中的内容
-                        // todo: 修改数据库，未来可以用主键来获取machine，现在用list不方便
+                        SocketServer.machineMap.put(machine.getName(),machine);
 
                     }
 
                     //向web服务器通知有客户端状态更改
-                    if(!SocketServer.nameToChannel.containsKey("@@")){//web服务器如果没启动，不用通知
+                    if(SocketServer.nameToChannel.containsKey("@@")){//web服务器如果没启动，不用通知
                         Channel webChannel= SocketServer.nameToChannel.get("@@");
                         HashMap<String,String> toWebContent = new HashMap<>();
                         toWebContent.put("name",machine.getName());
@@ -132,12 +131,13 @@ public class TelescreenHandler extends ChannelInboundHandlerAdapter {
 
                         SocketServer.channelToName.remove(ctx.channel());
                         SocketServer.nameToChannel.remove(machineName);
-                        // todo 修改数据库
+                        SocketServer.machineMap.remove(machineName);
                     }
                     else{//type==update，要更新某个客户端状态
                         String machineObject = content.get("machineObject");
                         Machine machine = JSON.parseObject(machineObject, Machine.class);
-                        // todo 修改数据库，把新machine放入数据库进行更新
+                        SocketServer.machineMap.put(machineName,machine);
+
                         //向客户端报告，让它主动关闭
                         Channel clientChannel = SocketServer.nameToChannel.get(machineName);//通过map找到对应的channel
                         HashMap<String,String> responseContent = new HashMap<>();
@@ -166,10 +166,13 @@ public class TelescreenHandler extends ChannelInboundHandlerAdapter {
             //System.out.println("空闲事件类型："+event.state());
             if(event.state()==READER_IDLE){
                 String clientName = SocketServer.channelToName.get(ctx.channel());//得到断线的clientName
+                if("@@".equals(clientName)){//web服务器不用心跳
+                    return;
+                }
                 //把这个断线的客户端从记录中删除
                 SocketServer.nameToChannel.remove(clientName);
                 SocketServer.channelToName.remove(ctx.channel());
-                // todo: 修改数据库，未来可以用主键来获取machine，现在用list不方便
+                SocketServer.machineMap.remove(clientName);
                 System.out.println(clientName+"超时未发送心跳包，断掉连接");
 
                 //如果链接还管用，就向客户端报告，让它主动关闭

@@ -22,13 +22,13 @@ public class SocketServer {
     private static EventLoopGroup workerGroup;
     private static ServerBootstrap server;
     static Map<String, Channel> nameToChannel;//key是客户端名字，value是对应的channel
-    static Map<Channel, String> channelToName;//key是channel，value是对应的客户端名字
-    static List<Machine> machineList;//充当数据库，用于保存已经登记的machine，将来会用redis来代替
+    static Map<Channel, String> channelToName;//key是channel，value是对应的客户端名字。目的是当心跳断开时根据channel得知哪个服务器断线了
+    public static ConcurrentHashMap<String,Machine> machineMap;//充当数据库，用于保存已经登记的machine，将来会用redis来代替
 
     static{
         nameToChannel = new ConcurrentHashMap<>();
         channelToName = new ConcurrentHashMap<>();
-        machineList = new ArrayList<>();//实际上应该用线程安全的类
+        machineMap = new ConcurrentHashMap<>();
 
         bossGroup = new NioEventLoopGroup();
         workerGroup = new NioEventLoopGroup();

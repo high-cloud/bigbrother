@@ -22,7 +22,7 @@ public class MachineApplication {
         machine.setName(Util.randomName(3));
         machine.setOnline(true);
         //SocketClient client = new SocketClient(telesreenPort,telescreenIp);
-        client = new SocketClient(1984,"localhost");
+        client = new SocketClient(1985,"localhost");
 
         Scanner input=new Scanner(System.in);
         while (run){
