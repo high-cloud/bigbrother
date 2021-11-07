@@ -2,6 +2,8 @@ package ustc.yyd.bigbrother.machine.net;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import io.netty.channel.ChannelFuture;
+import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.handler.timeout.IdleStateEvent;
@@ -57,6 +59,25 @@ public class MachineHandler extends ChannelInboundHandlerAdapter {
                             //修改本地machine的值，不直接改变指针指向
                             MachineApplication.machine.setColor(machine.getColor());
                             MachineApplication.machine.setAutoChange(machine.isAutoChange());
+
+                            // 报告新状态
+                            SocketClient socketClient=MachineApplication.client;
+                            socketClient.change(MachineApplication.machine);
+//                            HashMap<String,String> content = new HashMap<>();
+//                            content.put("type","update");
+//                            content.put("machineObject",JSONObject.toJSONString(MachineApplication.machine));
+//                            String messageString = Util.creatMessageString(MessageType.client_report_telescreen,
+//                                    content);
+//                            ctx.writeAndFlush(messageString);
+//                            final ChannelFuture f= ctx.writeAndFlush("\r\n");//根据\r\n进行换行
+//                            f.addListener(new ChannelFutureListener() {
+//                                @Override
+//                                public void operationComplete(ChannelFuture channelFuture) throws Exception {
+//                                    assert f==channelFuture;
+//                                    System.out.println("finish report");
+//                                    ctx.close();
+//                                }
+//                            });
                             break;
                         }
                     }//switch (changeType)
@@ -76,7 +97,7 @@ public class MachineHandler extends ChannelInboundHandlerAdapter {
             IdleStateEvent event = (IdleStateEvent)evt;
             //System.out.println("空闲事件类型："+event.state());
             if(event.state()==WRITER_IDLE){
-                //System.out.println("超时未发送心跳包，发一个心跳包");
+                System.out.println("超时未发送心跳包，发一个心跳包");
                 HashMap<String,String> content = new HashMap<>();
                 String messageString = Util.creatMessageString(MessageType.client_heartBeat_telescreen,
                         content);

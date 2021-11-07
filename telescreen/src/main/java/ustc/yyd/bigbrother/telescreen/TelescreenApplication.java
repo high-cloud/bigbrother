@@ -8,6 +8,6 @@ import ustc.yyd.bigbrother.telescreen.net.SocketServer;
 public class TelescreenApplication {
 
     public static void main(String[] args) {//监听1985端口
-        SocketServer.run(1985);
+        SocketServer.run(1984);
     }
 }

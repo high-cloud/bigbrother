@@ -22,9 +22,10 @@ public class MachineApplication {
         machine.setName(Util.randomName(3));
         machine.setOnline(true);
         //SocketClient client = new SocketClient(telesreenPort,telescreenIp);
-        client = new SocketClient(1985,"localhost");
+        client = new SocketClient(1984,"localhost");
 
         Scanner input=new Scanner(System.in);
+        client.init(machine);
         while (run){
             System.out.println("请输入指令：");
             String str = input.next();

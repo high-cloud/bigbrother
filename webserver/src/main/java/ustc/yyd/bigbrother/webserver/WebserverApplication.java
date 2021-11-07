@@ -9,6 +9,6 @@ import ustc.yyd.bigbrother.webserver.socket.SocketClient;
 public class WebserverApplication {
     public static void main(String[] args) {
         SpringApplication.run(WebserverApplication.class, args);
-        SocketClient client = new SocketClient(1985,"localhost");
+        SocketClient client = new SocketClient(1984,"localhost");
     }
 }

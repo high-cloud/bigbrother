@@ -58,6 +58,7 @@ public class SocketClient {
         content.put("type","update");
         content.put("machineObject", JSONObject.toJSONString(machine));
 
+        System.out.println("changeOneClient");
         future.channel().writeAndFlush(Util.creatMessageString(MessageType.webserver_changeClient_telescreen,
                 content));
         future.channel().writeAndFlush("\r\n");

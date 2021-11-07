@@ -1,11 +1,9 @@
 package ustc.yyd.bigbrother.webserver.controller;
 
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import ustc.yyd.bigbrother.data.Color;
 import ustc.yyd.bigbrother.data.Machine;
+import ustc.yyd.bigbrother.webserver.data.DataBase;
 import ustc.yyd.bigbrother.webserver.socket.SocketClient;
 
 /*
@@ -21,12 +19,16 @@ public class Controller {
         return "success";
     }
 
-    @RequestMapping("/changeClientAuto")
-    public String changeClientAuto(String clientName, String autoColor){
+
+    @PostMapping("/changeClientAuto")
+    public String changeClientAuto(String clientName){
         //todo：从数据库里根据clientName来获取machine
-        Machine machine = new Machine();//模拟从数据库中取出
-        machine.setAutoChange("true".equals(autoColor));
+        Machine machine = DataBase.machineMap.get(clientName);
+        if(machine==null)
+            return "fail";
+        machine.setAutoChange(!machine.isAutoChange());
         SocketClient.changeOneClient(clientName, machine);
+        machine.setAutoChange(!machine.isAutoChange());
         return "success";
     }
 

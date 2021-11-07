@@ -23,9 +23,9 @@ public class TelescreenHandler extends ChannelInboundHandlerAdapter {
         if(msg instanceof String){
             String s = (String)msg;
             Message message = JSON.parseObject(s, Message.class);
-            if(message.getType()!=MessageType.client_heartBeat_telescreen){//心跳包不显示
-                System.out.println("数据内容："+JSONObject.toJSONString(message));
-            }
+//            if(message.getType()!=MessageType.client_heartBeat_telescreen){//心跳包不显示
+//                System.out.println("数据内容："+JSONObject.toJSONString(message));
+//            }
 
             switch (message.getType()){
                 case client_register_telescreen:{//服务器处理客户端登记请求
@@ -142,14 +142,15 @@ public class TelescreenHandler extends ChannelInboundHandlerAdapter {
                         Machine machine = JSON.parseObject(machineObject, Machine.class);
                         //SocketServer.machineMap.put(machineName,machine);
 
-                        //向客户端报告，让它主动关闭
+                        System.out.println("telescreen_changeClient_client");
+                        //向客户端报告，让它更新
                         Channel clientChannel = SocketServer.nameToChannel.get(machineName);//通过map找到对应的channel
                         HashMap<String,String> responseContent = new HashMap<>();
                         responseContent.put("type","update");
                         responseContent.put("machineObject",machineObject);
                         clientChannel.writeAndFlush(Util.creatMessageString(MessageType.telescreen_changeClient_client,
                                 responseContent));
-                        ChannelFuture future = ctx.channel().writeAndFlush("\r\n");//根据\r\n进行换行
+                        ChannelFuture future = clientChannel.writeAndFlush("\r\n");//根据\r\n进行换行
                         future.channel().close();
                     }
                     break;
