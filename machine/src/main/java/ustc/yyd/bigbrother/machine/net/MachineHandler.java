@@ -56,13 +56,15 @@ public class MachineHandler extends ChannelInboundHandlerAdapter {
                         case "update":{//收到修改客户端状态的指令
                             String machineString = message.getContent().get("machineObject");
                             Machine machine = JSON.parseObject(machineString, Machine.class);
-                            //修改本地machine的值，不直接改变指针指向
+//                            修改本地machine的值，不直接改变指针指向
                             MachineApplication.machine.setColor(machine.getColor());
                             MachineApplication.machine.setAutoChange(machine.isAutoChange());
 
+
+                            MachineApplication.client.change(MachineApplication.machine);
                             // 报告新状态
-                            SocketClient socketClient=MachineApplication.client;
-                            socketClient.change(MachineApplication.machine);
+//                            SocketClient socketClient=MachineApplication.client;
+//                            socketClient.change(MachineApplication.machine);
 //                            HashMap<String,String> content = new HashMap<>();
 //                            content.put("type","update");
 //                            content.put("machineObject",JSONObject.toJSONString(MachineApplication.machine));

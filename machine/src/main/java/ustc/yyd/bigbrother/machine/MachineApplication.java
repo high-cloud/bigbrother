@@ -26,6 +26,11 @@ public class MachineApplication {
 
         Scanner input=new Scanner(System.in);
         client.init(machine);
+
+        AutoChangeColor autoChangeColor=  new AutoChangeColor();
+        Thread thread=new Thread(autoChangeColor);
+        thread.start();
+
         while (run){
             System.out.println("请输入指令：");
             String str = input.next();
@@ -75,4 +80,20 @@ public class MachineApplication {
     }
 
 
+    static class AutoChangeColor implements Runnable{
+        @Override
+        public void run() {
+            while (true){
+                if(machine.isAutoChange()){
+                    machine.setColor(Util.randomColorRGB());
+                    client.change(machine);
+                }
+                try {
+                    Thread.sleep(1050);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
 }

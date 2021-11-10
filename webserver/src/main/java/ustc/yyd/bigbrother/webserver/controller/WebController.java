@@ -29,7 +29,7 @@ public class WebController {
     public String index() {
         System.out.println(DataBase.machineMap.size());
 
-        return "index";
+        return "tables";
     }
 
     @GetMapping("/clients")

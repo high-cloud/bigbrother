@@ -26,6 +26,7 @@ public class TelescreenHandler extends ChannelInboundHandlerAdapter {
 //            if(message.getType()!=MessageType.client_heartBeat_telescreen){//心跳包不显示
 //                System.out.println("数据内容："+JSONObject.toJSONString(message));
 //            }
+            System.out.println("数据内容："+JSONObject.toJSONString(message));
 
             switch (message.getType()){
                 case client_register_telescreen:{//服务器处理客户端登记请求
@@ -150,8 +151,7 @@ public class TelescreenHandler extends ChannelInboundHandlerAdapter {
                         responseContent.put("machineObject",machineObject);
                         clientChannel.writeAndFlush(Util.creatMessageString(MessageType.telescreen_changeClient_client,
                                 responseContent));
-                        ChannelFuture future = clientChannel.writeAndFlush("\r\n");//根据\r\n进行换行
-                        future.channel().close();
+                        clientChannel.writeAndFlush("\r\n");//根据\r\n进行换行
                     }
                     break;
                 }

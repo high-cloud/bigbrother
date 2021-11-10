@@ -32,12 +32,23 @@ public class Controller {
         return "success";
     }
 
-    @RequestMapping("/changeClientColor")
-    public String changeClientColor(String clientName, Color color){//目前不知道用什么参数好，具体看前端实现
+    @PostMapping("/changeClientColor")
+    public String changeClientColor(String clientName, String red,String green,String blue){//目前不知道用什么参数好，具体看前端实现
         //todo：从数据库里根据clientName来获取machine
-        Machine machine = new Machine();//模拟从数据库中取出
-        machine.setColor(color);
+        Machine machine = DataBase.machineMap.get(clientName);//模拟从数据库中取出
+        if(machine==null)
+            return "fail";
+        Color newColor;
+        try {
+            newColor=new Color(Integer.parseInt(red),Integer.parseInt(green),Integer.parseInt(blue));
+        }catch (Exception e)
+        {
+            return "fail";
+        }
+        Color oldColor=machine.getColor();
+        machine.setColor(newColor);
         SocketClient.changeOneClient(clientName, machine);
+        machine.setColor(oldColor); //变回原来的颜色，因为这不是客户端上报的
         return "success";
     }
 }
