@@ -1,0 +1,6 @@
+运行方法：
+先运行telescreenApplication（socket服务器）
+在运行WebserverApplication
+再运行machineApplication
+
+打开localhost:8080/tables
