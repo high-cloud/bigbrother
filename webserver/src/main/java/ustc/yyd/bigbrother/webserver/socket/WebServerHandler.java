@@ -47,8 +47,9 @@ public class WebServerHandler extends ChannelInboundHandlerAdapter {
                     }
                     else {//如果删除就在数据库中将其标记为离线
                         Machine machine = DataBase.machineMap.get(clientName);
-                        machine.setOnline(false);
-                        DataBase.machineMap.put(clientName,machine);
+                        if(machine!=null){
+                            DataBase.machineMap.remove(clientName);
+                        }
                     }
 
                     break;

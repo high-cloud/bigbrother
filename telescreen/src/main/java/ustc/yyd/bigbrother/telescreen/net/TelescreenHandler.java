@@ -23,9 +23,9 @@ public class TelescreenHandler extends ChannelInboundHandlerAdapter {
         if(msg instanceof String){
             String s = (String)msg;
             Message message = JSON.parseObject(s, Message.class);
-//            if(message.getType()!=MessageType.client_heartBeat_telescreen){//心跳包不显示
-//                System.out.println("数据内容："+JSONObject.toJSONString(message));
-//            }
+            if(message.getType()!=MessageType.client_heartBeat_telescreen){//心跳包不显示
+                System.out.println("数据内容："+JSONObject.toJSONString(message));
+            }
             System.out.println("数据内容："+JSONObject.toJSONString(message));
 
             switch (message.getType()){

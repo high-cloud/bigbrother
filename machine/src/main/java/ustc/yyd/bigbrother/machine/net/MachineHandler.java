@@ -99,7 +99,7 @@ public class MachineHandler extends ChannelInboundHandlerAdapter {
             IdleStateEvent event = (IdleStateEvent)evt;
             //System.out.println("空闲事件类型："+event.state());
             if(event.state()==WRITER_IDLE){
-                System.out.println("超时未发送心跳包，发一个心跳包");
+//                System.out.println("超时未发送心跳包，发一个心跳包");
                 HashMap<String,String> content = new HashMap<>();
                 String messageString = Util.creatMessageString(MessageType.client_heartBeat_telescreen,
                         content);
