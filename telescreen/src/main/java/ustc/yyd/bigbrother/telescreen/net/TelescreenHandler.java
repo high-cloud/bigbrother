@@ -118,6 +118,7 @@ public class TelescreenHandler extends ChannelInboundHandlerAdapter {
 
                 case webserver_register_telescreen:{//服务器处理webServer登记请求
                     SocketServer.nameToChannel.put("@@",ctx.channel());//将客户端名字和对应channel记录进Map
+                    SocketServer.channelToName.put(ctx.channel(),"@@");
                     break;
                 }
                 case webserver_changeClient_telescreen:{//web服务器控制客户端状态改变
@@ -164,13 +165,14 @@ public class TelescreenHandler extends ChannelInboundHandlerAdapter {
     }
 
     @Override
-    public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception{//5秒未收到任何消息，将会断掉连接
+    public void userEventTriggered(ChannelHandlerContext ctx, Object evt){//5秒未收到任何消息，将会断掉连接
         if(evt instanceof IdleStateEvent){
             //System.out.println("触发空闲事件");
             IdleStateEvent event = (IdleStateEvent)evt;
             //System.out.println("空闲事件类型："+event.state());
             if(event.state()==READER_IDLE){
                 String clientName = SocketServer.channelToName.get(ctx.channel());//得到断线的clientName
+                //System.out.println("断线clientName:"+clientName);
                 if("@@".equals(clientName)){//web服务器不用心跳
                     return;
                 }
@@ -196,9 +198,31 @@ public class TelescreenHandler extends ChannelInboundHandlerAdapter {
                 ctx.channel().writeAndFlush(Util.creatMessageString(MessageType.telescreen_changeClient_client,
                         responseContent));
                 ChannelFuture future = ctx.channel().writeAndFlush("\r\n");//根据\r\n进行换行
+
                 future.channel().close();
+                ctx.disconnect();
             }
         }
 
+    }
+    @Override
+    public void channelInactive(ChannelHandlerContext ctx) {
+        String clientName = SocketServer.channelToName.get(ctx.channel());//得到断线的clientName
+        System.out.println(clientName+"断开了连接");
+
+        //向web服务器通告有客户端掉线
+        Channel webChannel= SocketServer.nameToChannel.get("@@");
+        HashMap<String,String> toWebContent = new HashMap<>();
+        toWebContent.put("name",clientName);
+        toWebContent.put("type","stop");
+        toWebContent.put("machineObject",null);
+        webChannel.writeAndFlush(Util.creatMessageString(MessageType.telescreen_clientChange_webserver,
+                toWebContent));
+        webChannel.writeAndFlush("\r\n");//根据\r\n进行换行
+
+        SocketServer.nameToChannel.remove(clientName);
+        SocketServer.channelToName.remove(ctx.channel());
+
+        ctx.fireChannelInactive();
     }
 }
